@@ -2,7 +2,7 @@
 
 # Usage
 
-For zig 0.13.0, packages wuffs version 0.4.0-alpha.9+3837.20240914
+For zig 0.14.0, packages wuffs version 0.4.0-alpha.9+3837.20240914
 
 ```
 zig fetch --save=wuffs git+https://github.com/allyourcodebase/wuffs

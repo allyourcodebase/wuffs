@@ -1,13 +1,14 @@
 .{
-    .name = "wuffs",
+    .name = .wuffs,
     .version = "0.4.0-alpha.9+3837.20240914",
+    .fingerprint = 0x67c0c05981c921dc,
     .paths = .{
         "",
     },
     .dependencies = .{
         .wuffs = .{
             .url = "https://github.com/google/wuffs-mirror-release-c/archive/90e4d81a6a8b7b601e8e568da32a105d7f7705e5.tar.gz",
-            .hash = "12203a69965929b7cd32fe834ace489fb083154ea7227bbf63a698233a78c65c96a7",
+            .hash = "N-V-__8AANEmUgA6aZZZKbfNMv6DSs5In7CDFU6nInu_Y6aY",
         },
     },
 }
