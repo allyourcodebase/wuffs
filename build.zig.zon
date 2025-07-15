@@ -3,7 +3,8 @@
     .version = "0.4.0-alpha.9+3837.20240914",
     .fingerprint = 0x67c0c05981c921dc,
     .paths = .{
-        "",
+        "build.zig",
+        "build.zig.zon",
     },
     .dependencies = .{
         .wuffs = .{
