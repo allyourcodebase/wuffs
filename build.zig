@@ -15,10 +15,11 @@ pub fn build(b: *std.Build) !void {
             .link_libc = true,
         }),
     });
-    wuffs_lib.addCSourceFile(.{
+    wuffs_lib.root_module.addCSourceFile(.{
         .file = wuffs_dep.path("release/c/wuffs-v0.4.c"),
         .flags = &.{"-DWUFFS_IMPLEMENTATION"},
     });
+    wuffs_lib.root_module.sanitize_c = .off; // fixes a crash in ReleaseSafe mode at "return (*func_ptrs->decode_image_config)(self, a_dst, a_src)"
     wuffs_lib.installHeader(wuffs_dep.path("release/c/wuffs-v0.4.c"), "wuffs.h");
     b.installArtifact(wuffs_lib);
 
