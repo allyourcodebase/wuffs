@@ -2,67 +2,32 @@
 
 # Usage
 
-For zig 0.14.0, packages wuffs version 0.4.0-alpha.9+3837.20240914
+Packages wuffs version 0.4.0-alpha.9+3837.20240914
 
-```
-zig fetch --save=wuffs git+https://github.com/allyourcodebase/wuffs
-```
+Run `zig build` to create static and dynamic libraries.
 
-Then, choose one:
+### Usage from Zig
 
-## Option 1: Statically linking wuffs
+If you're using this library from Zig, import the `wuffs` module, which will contain
+the full implementation and translated C header files which you can use like so:
 
-build.zig:
-
-```
-const wuffs = b.dependency("wuffs", .{.target = target, .optimize = optimize});
-exe.linkLibrary(wuffs.artifact("wuffs"));
-```
-
-c:
-
-```
-#include <wuffs.h>
-```
-
-## Option 2: Using from zig with automatic translate-c bindings
-
-build.zig:
-
-```
-const wuffs = b.dependency("wuffs", .{.target = target, .optimize = optimize});
-exe.root_module.addImport("wuffs", wuffs.module("wuffs"));
-```
-
-zig:
-
-```
+```zig
 const wuffs = @import("wuffs");
+
+test {
+    std.testing.expectEqual(wuffs.WUFFS_BASE__FOURCC__BMP, some_value);
+}
 ```
 
-## Option 3: Using in one file from C without exporting any symbols:
+If you want to make use of dynamic linking, then you can import the `headers` module,
+which will contain the translated C header files, but none of the implementation.
 
-build.zig:
+### Zig 0.16.0 translate-c regression note
 
-```
-const wuffs = b.dependency("wuffs", .{.target = target, .optimize = optimize});
-exe.addIncludePath(wuffs.b.dependency("wuffs", .{}).path("release/c"));
-```
+As of Zig 0.16.0, the compiler switched to rely entirely on arocc for translating c headers, which caused some regressions
+in header files that do macro acrobatics (which unfortunately includes this one).
 
-c:
+As a temporary stopgap this package includes the `impl` module which contains the full implementation, similarly to the `wuffs` module,
+but unlike `wuffs` it does not contain the translate-c header.
 
-```
-#define WUFFS_CONFIG__STATIC_FUNCTIONS
-#define WUFFS_IMPLEMENTATION
-#include <wuffs-v0.4.c>
-
-// wuffs functions can be used in this file only and do not leak any symbols outside this file
-```
-
-# Zig Usage Example
-
-https://github.com/pfgithub/blockeditor/blob/014d596aa439cc2273b7b534768865d4fa037e55/packages/loadimage/src/loadimage.zig#L39
-
-# Notes
-
-This package is for using the wuffs standard library. It downloads a prebuilt `.c` file, and does not package the wuffs compiler itself for use with zig.
+If you encounter a translate-c crash when importing `wuffs`, consider switching temporarily to `impl` and use manual `extern` definitions.

@@ -6,30 +6,54 @@ pub fn build(b: *std.Build) !void {
 
     const wuffs_dep = b.dependency("wuffs", .{});
 
-    const wuffs_lib = b.addLibrary(.{
-        .name = "wuffs",
-        .linkage = .static,
-        .root_module = b.createModule(.{
-            .target = target,
-            .optimize = optimize,
-            .link_libc = true,
-        }),
+    const headers = b.addTranslateC(.{
+        .target = target,
+        .optimize = optimize,
+        .root_source_file = wuffs_dep.path("release/c/wuffs-v0.4.c"),
+        .link_libc = true,
     });
-    wuffs_lib.root_module.addCSourceFile(.{
-        .file = wuffs_dep.path("release/c/wuffs-v0.4.c"),
-        .flags = &.{"-DWUFFS_IMPLEMENTATION"},
-    });
-    wuffs_lib.root_module.sanitize_c = .off; // fixes a crash in ReleaseSafe mode at "return (*func_ptrs->decode_image_config)(self, a_dst, a_src)"
-    wuffs_lib.installHeader(wuffs_dep.path("release/c/wuffs-v0.4.c"), "wuffs.h");
-    b.installArtifact(wuffs_lib);
 
-    const wuffs_translatec = b.addTranslateC(.{
+    // Headers-only module, useful when depending on a system-provided shared library.
+    _ = headers.addModule("headers");
+
+    // This is the main module that contains both translated headers and implementation.
+    const wuffs = b.addModule("wuffs", .{
+        .root_source_file = headers.getOutput(),
         .target = target,
         .optimize = optimize,
         .link_libc = true,
-        .root_source_file = wuffs_dep.path("release/c/wuffs-v0.4.c"),
     });
+    wuffs.addCSourceFile(.{
+        .file = wuffs_dep.path("release/c/wuffs-v0.4.c"),
+        .flags = &.{"-DWUFFS_IMPLEMENTATION"},
+    });
+    wuffs.sanitize_c = .off; // fixes a crash in ReleaseSafe mode at "return (*func_ptrs->decode_image_config)(self, a_dst, a_src)"
 
-    const wuffs_mod = wuffs_translatec.addModule("wuffs");
-    wuffs_mod.linkLibrary(wuffs_lib);
+    // Same as 'wuffs' but without the translate-c stuff, added as a temporary workaround for regressions in Zig 0.16 translateC.
+    const impl = b.addModule("impl", .{
+        .target = target,
+        .optimize = optimize,
+        .link_libc = true,
+    });
+    impl.addCSourceFile(.{
+        .file = wuffs_dep.path("release/c/wuffs-v0.4.c"),
+        .flags = &.{"-DWUFFS_IMPLEMENTATION"},
+    });
+    impl.sanitize_c = .off; // fixes a crash in ReleaseSafe mode at "return (*func_ptrs->decode_image_config)(self, a_dst, a_src)"
+
+    const lib = b.addLibrary(.{
+        .name = "wuffs",
+        .linkage = .static,
+        .root_module = impl,
+    });
+    lib.installHeader(wuffs_dep.path("release/c/wuffs-v0.4.c"), "wuffs.h");
+    b.installArtifact(lib);
+
+    const dynamic_lib = b.addLibrary(.{
+        .name = "wuffs",
+        .linkage = .dynamic,
+        .root_module = impl,
+    });
+    dynamic_lib.installHeader(wuffs_dep.path("release/c/wuffs-v0.4.c"), "wuffs.h");
+    b.installArtifact(dynamic_lib);
 }
