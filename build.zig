@@ -6,23 +6,28 @@ pub fn build(b: *std.Build) !void {
 
     const wuffs_dep = b.dependency("wuffs", .{});
 
-    const headers = b.addTranslateC(.{
-        .target = target,
-        .optimize = optimize,
-        .root_source_file = wuffs_dep.path("release/c/wuffs-v0.4.c"),
-        .link_libc = true,
+    const Translator = @import("translate_c").Translator;
+    const translate_c = b.dependency("translate_c", .{
+        .optimize = .ReleaseFast,
     });
 
-    // Headers-only module, useful when depending on a system-provided shared library.
-    _ = headers.addModule("headers");
+    const t: Translator = .init(translate_c, .{
+        .c_source_file = wuffs_dep.path("release/c/wuffs-v0.4.c"),
+        .target = target,
+        .optimize = optimize,
+    });
 
     // This is the main module that contains both translated headers and implementation.
     const wuffs = b.addModule("wuffs", .{
-        .root_source_file = headers.getOutput(),
+        .root_source_file = t.output_file,
         .target = target,
         .optimize = optimize,
         .link_libc = true,
     });
+
+    wuffs.addImport("c_builtins", translate_c.module("c_builtins"));
+    wuffs.addImport("helpers", translate_c.module("helpers"));
+
     wuffs.addCSourceFile(.{
         .file = wuffs_dep.path("release/c/wuffs-v0.4.c"),
         .flags = &.{"-DWUFFS_IMPLEMENTATION"},
