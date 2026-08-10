@@ -2,15 +2,15 @@
     .name = .wuffs,
     .version = "0.4.0-alpha.9+3837.20240914",
     .fingerprint = 0x67c0c05981c921dc,
-    .minimum_zig_version = "0.17.0-dev.812+5434f85c4",
+    .minimum_zig_version = "0.17.0-dev.1471+ff10b90bc",
     .dependencies = .{
         .wuffs = .{
             .url = "https://github.com/google/wuffs-mirror-release-c/archive/90e4d81a6a8b7b601e8e568da32a105d7f7705e5.tar.gz",
             .hash = "N-V-__8AANEmUgA6aZZZKbfNMv6DSs5In7CDFU6nInu_Y6aY",
         },
         .translate_c = .{
-            .url = "git+https://codeberg.org/ziglang/translate-c#c26bb176f3d63c8f3f57ac4e82d78f9124506b0d",
-            .hash = "translate_c-0.0.0-Q_BUWuEVBwCbZUsNorTQ6-d3nYx8KDgHHWtVWBzgzyB5",
+            .url = "git+https://codeberg.org/ziglang/translate-c#2a6613bcc09c74296d785e660fe98d2eb310d760",
+            .hash = "translate_c-0.0.0-Q_BUWjQ7BwAhlMt3Zf4l3Jw-y0_TOpJWgcK8rk4d0aWv",
         },
     },
     .paths = .{
